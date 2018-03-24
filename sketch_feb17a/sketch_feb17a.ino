@@ -88,7 +88,7 @@ void setup()
 {
   Serial.begin(9600);
   randomSeed(analogRead(0));
-  delay(200);
+  delay(100);
 
   for(int i = 0; i < numModifierInputs; i++) {
     pinMode(modifierInputs[i], INPUT);
@@ -120,7 +120,7 @@ void loop()
       buf[2] = regularValues[i];
       Serial.write(buf, 8);
       releaseKey();
-      delay(200);
+      delay(100);
     }
   }
 }
