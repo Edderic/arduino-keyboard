@@ -13,10 +13,14 @@ byte cols[] = {22,24,26,28,30,32,34,36,38,40};
 const int colCount = sizeof(cols)/sizeof(cols[0]);
 
 byte keys[colCount][rowCount];
+#define KEY_A 0x04 // Keyboard a and A
+#define KEY_B 0x05 // Keyboard b and B
+#define KEY_C 0x06 // Keyboard c and C
+#define KEY_D 0x07 // Keyboard d and D
 
 int keyValues[8][10] = {
-  {'a', 'b', 'c', 'd', 'e' , 'f', 'g', 'h', 'i', 'j' },
-  {'k', 'l', 'm', 'n', 'o' , 'p', 'q', 'r', 's', 't' },
+  {KEY_A, KEY_B, 'c', 'd', 'e' , 'f', 'g', 'h', 'i', 'j' },
+  {KEY_C, KEY_D, 'm', 'n', 'o' , 'p', 'q', 'r', 's', 't' },
   {'u', 'v', 'w', 'x', 'y' , 'z', 'A', 'B', 'C', 'D' },
   {'E', 'F', 'G', 'H', 'I' , 'J', 'K', 'L', 'M', 'N' },
   {'O', 'P', 'Q', 'R', 'S' , 'T', 'U', 'V', 'W', 'X' },
@@ -24,6 +28,7 @@ int keyValues[8][10] = {
   {'8', '9', '-', '_', '?' , '?', '.', '>', ',', '<' },
   {'!', '@', '#', '$', '%' , '^', '&', '*', '(', ')' }
 };
+
 void setup() {
     // What is this number?
 
@@ -36,7 +41,7 @@ void setup() {
     }
 
     Keyboard.begin();
-
+}
 
 void readMatrix() {
     // iterate the columns
