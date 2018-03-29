@@ -1,35 +1,31 @@
+#include <Keyboard.h>
+
 // Keyboard Matrix Tutorial Example
 // baldengineer.com
 // CC BY-SA 4.0
 
-uint8_t buf[8] = {
-0 }; /* Keyboard report buffer */
-
 // JP1 is an input
-byte rows[] = {2,3};
+byte rows[] = {2,3,4,5,6,7,8,9};
 const int rowCount = sizeof(rows)/sizeof(rows[0]);
 
 // JP2 and JP3 are outputs
-byte cols[] = {8,9};
+byte cols[] = {22,24,26,28,30,32,34,36,38,40};
 const int colCount = sizeof(cols)/sizeof(cols[0]);
 
 byte keys[colCount][rowCount];
 
-#define KEY_A 0x04 // Keyboard a and A
-#define KEY_B 0x05 // Keyboard b and B
-#define KEY_C 0x06 // Keyboard c and C
-#define KEY_D 0x07 // Keyboard d and D
-
-int keyValues[2][2] = {
-  { KEY_A, KEY_B },
-  { KEY_C, KEY_D }
+int keyValues[8][10] = {
+  {'a', 'b', 'c', 'd', 'e' , 'f', 'g', 'h', 'i', 'j' },
+  {'k', 'l', 'm', 'n', 'o' , 'p', 'q', 'r', 's', 't' },
+  {'u', 'v', 'w', 'x', 'y' , 'z', 'A', 'B', 'C', 'D' },
+  {'E', 'F', 'G', 'H', 'I' , 'J', 'K', 'L', 'M', 'N' },
+  {'O', 'P', 'Q', 'R', 'S' , 'T', 'U', 'V', 'W', 'X' },
+  {'Y', 'z', '0', '1', '2' , '3', '4', '5', '6', '7' },
+  {'8', '9', '-', '_', '?' , '?', '.', '>', ',', '<' },
+  {'!', '@', '#', '$', '%' , '^', '&', '*', '(', ')' }
 };
-
 void setup() {
     // What is this number?
-
-    Serial.begin(9600);
-    // Serial.begin(115200);
 
     for(int x=0; x<rowCount; x++) {
         pinMode(rows[x], INPUT);
@@ -39,7 +35,8 @@ void setup() {
         pinMode(cols[x], INPUT_PULLUP);
     }
 
-}
+    Keyboard.begin();
+
 
 void readMatrix() {
     // iterate the columns
@@ -65,26 +62,17 @@ void printMatrix() {
     for (int rowIndex=0; rowIndex < rowCount; rowIndex++) {
         for (int colIndex=0; colIndex < colCount; colIndex++) {
             if (keys[colIndex][rowIndex] != 1) {
-              buf[0] = 0;
-              buf[2] = keyValues[colIndex][rowIndex];
-              Serial.write(buf, 8);
-              releaseKey();
-              delay(200);
+              Keyboard.press(keyValues[colIndex][rowIndex]);
             }
         }
     }
+
+    Keyboard.releaseAll();
+    delay(120);
 }
 
 void loop() {
     readMatrix();
     printMatrix();
 }
-
-void releaseKey()
-{
-  buf[0] = 0;
-  buf[2] = 0;
-  Serial.write(buf, 8); // Release key
-}
-
 
