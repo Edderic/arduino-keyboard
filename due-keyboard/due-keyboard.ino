@@ -5,11 +5,12 @@
 // CC BY-SA 4.0
 
 // JP1 is an input
-byte rows[] = {2,3,4,5,6,7,8,9};
+// byte rows[] = {2,3,4,5,6,7,8,9};
+byte rows[] = {2,3,4,5,6,7,8,9,11,12};
 const int rowCount = sizeof(rows)/sizeof(rows[0]);
 
 // JP2 and JP3 are outputs
-byte cols[] = {22,24,26,28,30,32,34,36,38,40};
+byte cols[] = {22,24,26,28,30,32,34,36};
 const int colCount = sizeof(cols)/sizeof(cols[0]);
 
 byte keys[colCount][rowCount];
@@ -19,8 +20,8 @@ byte keys[colCount][rowCount];
 #define KEY_D 0x07 // Keyboard d and D
 
 int keyValues[8][10] = {
-  {KEY_A, KEY_B, 'c', 'd', 'e' , 'f', 'g', 'h', 'i', 'j' },
-  {KEY_C, KEY_D, 'm', 'n', 'o' , 'p', 'q', 'r', 's', 't' },
+  {'a', 'b', 'c', 'd', 'e' , 'f', 'g', 'h', 'i', 'j' },
+  {'k', 'l', 'm', 'n', 'o' , 'p', 'q', 'r', 's', 't' },
   {'u', 'v', 'w', 'x', 'y' , 'z', 'A', 'B', 'C', 'D' },
   {'E', 'F', 'G', 'H', 'I' , 'J', 'K', 'L', 'M', 'N' },
   {'O', 'P', 'Q', 'R', 'S' , 'T', 'U', 'V', 'W', 'X' },
@@ -31,6 +32,8 @@ int keyValues[8][10] = {
 
 void setup() {
     // What is this number?
+
+    Serial.begin(9600);
 
     for(int x=0; x<rowCount; x++) {
         pinMode(rows[x], INPUT);
