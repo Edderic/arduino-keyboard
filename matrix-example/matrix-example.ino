@@ -291,8 +291,11 @@ const int colCount = sizeof(cols)/sizeof(cols[0]);
 byte keys[colCount][rowCount];
 byte prevKeys[colCount][rowCount];
 
-int sameAsPrevCounter = 0;
-boolean aKeyHasBeenPressed;
+bool prevSameAsCurrMatrix = true;
+bool somekeyCurrPressed = false;
+
+int prevSameAsCurrMatrixCounter = 0;
+bool aKeyHasBeenPressed = false;
 
 // int keyValues[10][8] = {
   // { KEY_1, KEY_APOSTROPHE, KEY_A, KEY_SEMICOLON,  0,              0,             0,             0,                   },
@@ -336,7 +339,10 @@ void setup() {
 
 }
 
-void readMatrix() {
+int readMatrix() {
+    aKeyHasBeenPressed = false;
+    prevSameAsCurrMatrix = true;
+
     // iterate the columns
     for (int colIndex=0; colIndex < colCount; colIndex++) {
         // col: set to output to low
@@ -350,9 +356,29 @@ void readMatrix() {
             pinMode(rowCol, INPUT_PULLUP);
             keys[colIndex][rowIndex] = digitalRead(rowCol);
             pinMode(rowCol, INPUT);
+
+            prevSameAsCurrMatrix = prevSameAsCurrMatrix &&
+              (keys[colIndex][rowIndex] == prevKeys[colIndex][rowIndex]);
+
+            if (keys[colIndex][rowIndex] != 1)
+              aKeyHasBeenPressed = true;
+
         }
         // disable the column
         pinMode(curCol, INPUT);
+    }
+
+    if (prevSameAsCurrMatrix)
+      prevSameAsCurrMatrixCounter += 1;
+    else
+      prevSameAsCurrMatrixCounter = 0;
+}
+
+void copyCurrMatrixToPrev() {
+    for (int rowIndex=0; rowIndex < rowCount; rowIndex++) {
+        for (int colIndex=0; colIndex < colCount; colIndex++) {
+            prevKeys[colIndex][rowIndex] = keys[colIndex][rowIndex];
+        }
     }
 }
 
@@ -364,15 +390,118 @@ void printMatrix() {
               buf[2] = keyValues[colIndex][rowIndex];
               Serial.write(buf, 8);
               releaseKey();
-              delay(200);
             }
         }
     }
 }
 
+void debugPrintMatrix() {
+    for (int rowIndex=0; rowIndex < rowCount; rowIndex++) {
+        for (int colIndex=0; colIndex < colCount; colIndex++) {
+            if (keys[colIndex][rowIndex] != 1) {
+              buf[0] = 0;
+              buf[2] = debugPrintValue();
+              Serial.write(buf, 8);
+              releaseKey();
+            }
+        }
+    }
+}
+
+int debugPrintValue() {
+  if (newKeyHasBeenPressed()) {
+    return 4;
+  } else if (keysHeldNotLongEnough()) {
+    return 5;
+  } else if (keysHeldLongEnough()) {
+    return 6;
+  } else {
+    return 7;
+  }
+}
+
+bool pressedLongEnough() {
+  return prevSameAsCurrMatrixCounter >= 200 && (prevSameAsCurrMatrixCounter % 50 == 0);
+}
+
+bool newKeyHasBeenPressed() {
+  return aKeyHasBeenPressed && (prevSameAsCurrMatrix == false);
+}
+
+bool keysHeldNotLongEnough() {
+  return aKeyHasBeenPressed && (prevSameAsCurrMatrix == true) && !pressedLongEnough();
+}
+
+bool keysHeldLongEnough() {
+  return aKeyHasBeenPressed && (prevSameAsCurrMatrix == true) && pressedLongEnough();
+}
+
+bool printable() {
+  return newKeyHasBeenPressed() || keysHeldLongEnough();
+}
+
+
+
+bool keysHeldLongEnoughValue() {
+  return 0x06;
+}
+
+bool newKeyHasBeenPressedValue() {
+  return 0x04;
+}
+
+bool keysHeldNotLongEnoughValue() {
+  return 0x05;
+}
+
+// Goal: emulate keyboard hold. When pressing a key, it should immediately send
+// the first keypress. If a certain time threshold has not been met, then we
+// delay sending the key press. Otherwise, we send the keypress in a relatively
+// quick succession.
+//
+// States:
+//   Change in state: new key has been pressed
+//      * if key count is less than 6, print
+//        * aKeyHasBeenPressed == true, prevSameAsCurrMatrix == false,
+//   Key(s) held: Same keys presssed for not long enough
+//        * aKeyHasBeenPressed == true, prevSameAsCurrMatrix == true, pressedLongEnough == false
+//      * Don't print anything
+//   Key(s) held: Key pressed long enough
+//        * aKeyHasBeenPressed == true, prevSameAsCurrMatrix == true, pressedLongEnough == true
+//      * if key count is less than 6, print
+//      * Print held keys in the same intervals.
+//   No key pressed:
+//        * aKeyHasBeenPressed == false
+//      * Send nothing
+//
+
+// compares the previous matrix to the current matrix
+// returns true if no keys have been pressed
+// void changeFromPrevKeys(prevKeys, currKeys) {
+    // boolean same = false;
+    // boolean anyKeysPressed = false;
+//
+    // for (int rowIndex=0; rowIndex < rowCount; rowIndex++) {
+        // for (int colIndex=0; colIndex < colCount; colIndex++) {
+            // same = same || (
+              // prevKeys[colIndex][rowIndex] ==
+              // currKeys[colIndex][rowIndex]
+            // );
+        // }
+    // }
+//
+    // return same;
+// }
+//
+
 void loop() {
     readMatrix();
-    printMatrix();
+    copyCurrMatrixToPrev();
+    if (printable()) {
+      printMatrix();
+    }
+
+    // debugPrintMatrix();
 }
 
 void releaseKey()
